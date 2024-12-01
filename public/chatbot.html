@@ -146,6 +146,8 @@
     const queryInput = document.getElementById("query");
     const form = document.querySelector("form");
     const chatContent = document.getElementById("chat-content");
+    // Helper function to create a delay
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -187,8 +189,10 @@
           if (value) {
             const chunk = decoder.decode(value);
             gptResponse += chunk; // Accumulate the response
+
             ryaaResponseContainer.innerHTML = `<strong>RYAA:</strong> ${gptResponse}`; // Update the displayed message
             chatContent.scrollTop = chatContent.scrollHeight; // Keep scrolling to the bottom
+            await sleep(50); // Delay of 50 milliseconds (adjust as needed)
           }
         }
 
