@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<!--
+	Hielo by TEMPLATED
+	templated.co @templatedco
+	Released for free under the Creative Commons Attribution 3.0 license (templated.co/license)
+-->
+<html>
+  <head>
+    <title>Pi Router Project</title>
+    <meta charset="utf-8" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+  <body class="subpage">
+    <!-- Header -->
+    <header id="header">
+      <div class="logo">
+        <a href="index.html"
+          >Pi Router Project <span>by Brandon L. Byrd</span></a
+        >
+      </div>
+      <a href="#menu">Menu</a>
+    </header>
+    <!-- Nav -->
+    <nav id="menu">
+      <ul class="links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="#">Chat</a></li>
+        <!-- <li><a href="elements.html">Elements</a></li> -->
+      </ul>
+    </nav>
+    <!-- One -->
+    <section id="One" class="wrapper style3">
+      <div class="inner">
+        <header class="align-center">
+          <p>Chat</p>
+          <h2>Chat with RYAA (preview)</h2>
+        </header>
+      </div>
+    </section>
+    <!-- Two -->
+    <section id="two" class="wrapper style2">
+      <div class="inner">
+        <div class="box">
+          <div class="content">
+            <!-- <header class="align-center">
+              <p>maecenas sapien feugiat ex purus</p>
+              <h2>Lorem ipsum dolor</h2>
+            </header> -->
+            <p id="chat-content"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Chatbox -->
+    <section class="container" id="main">
+      <div class="row 200%">
+        <div class="6u$ 12u$(medium)">
+          <form method="post" action="#">
+            <div class="row uniform">
+              <!-- <div class="12u$">
+                <textarea
+                  readonly
+                  name="message"
+                  id="message"
+                  placeholder="Chat with RYAA"
+                  rows="6"
+                ></textarea>
+              </div> -->
+              <div class="9u 12u$(small)">
+                <input
+                  type="text"
+                  name="query"
+                  id="query"
+                  value=""
+                  placeholder="Query"
+                />
+              </div>
+              <div class="3u$ 12u$(small)">
+                <input type="submit" value="Send" class="fit" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+    <!-- Footer -->
+    <footer id="footer">
+      <div class="container">
+        <ul class="icons">
+          <li>
+            <a href="#" class="icon fa-twitter"
+              ><span class="label">Twitter</span></a
+            >
+          </li>
+          <li>
+            <a href="#" class="icon fa-facebook"
+              ><span class="label">Facebook</span></a
+            >
+          </li>
+          <li>
+            <a href="#" class="icon fa-instagram"
+              ><span class="label">Instagram</span></a
+            >
+          </li>
+          <li>
+            <a href="#" class="icon fa-envelope-o"
+              ><span class="label">Email</span></a
+            >
+          </li>
+        </ul>
+      </div>
+    </footer>
+    <div class="copyright">
+      Made with <a href="https://templated.co/">Templated</a>.
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/jquery.scrollex.min.js"></script>
+    <script src="assets/js/skel.min.js"></script>
+    <script src="assets/js/util.js"></script>
+    <script src="assets/js/main.js"></script>
+  </body>
+  <script>
+    const queryInput = document.getElementById("query");
+    const form = document.querySelector("form");
+    const chatContent = document.getElementById("chat-content");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const userMessage = queryInput.value.trim();
+      if (!userMessage) return;
+
+      // Add user message to the chat content
+      chatContent.innerHTML += `<strong>You:</strong> ${userMessage}<br>`;
+      queryInput.value = "";
+
+      // Create a temporary container for the RYAA's response
+      let ryaaResponseContainer = document.createElement("span");
+      ryaaResponseContainer.innerHTML = `<strong>RYAA:</strong> `;
+      chatContent.appendChild(ryaaResponseContainer);
+
+      // Scroll to the bottom as new messages are added
+      chatContent.scrollTop = chatContent.scrollHeight;
+
+      // Send message to backend and handle streaming response
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userMessage }),
+        });
+
+        if (!response.body) {
+          throw new Error("No response body received");
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let done = false;
+        let gptResponse = ""; // Accumulate the full response
+
+        while (!done) {
+          const { value, done: readerDone } = await reader.read();
+          done = readerDone;
+          if (value) {
+            const chunk = decoder.decode(value);
+            gptResponse += chunk; // Accumulate the response
+            ryaaResponseContainer.innerHTML = `<strong>RYAA:</strong> ${gptResponse}`; // Update the displayed message
+            chatContent.scrollTop = chatContent.scrollHeight; // Keep scrolling to the bottom
+          }
+        }
+
+        // Finalize the response display
+        ryaaResponseContainer.innerHTML = `<strong>RYAA:</strong> ${gptResponse}<br>`;
+      } catch (error) {
+        ryaaResponseContainer.innerHTML = `<strong>Error:</strong> Unable to fetch response<br>`;
+      }
+    });
+  </script>
+</html>
