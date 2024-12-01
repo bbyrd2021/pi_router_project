@@ -27,7 +27,11 @@ app.post("/api/chat", async (req, res) => {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o", // Replace with your desired model
       messages: [
-        { role: "system", content: "You are a helpful assistant." },
+        {
+          role: "system",
+          content:
+            "Your name is RYAA. RYAA stands for Realtime Yielding AI Assistant. You are a helpful assistant and the prototype of Brandon Byrd's Senior Project.",
+        },
         { role: "user", content: userMessage },
       ],
       stream: true,
